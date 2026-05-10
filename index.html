@@ -885,6 +885,139 @@
 
       <!--==================== MAIN ====================-->
       <main class="main">
+         <div class="quiz-container" id="quiz-container" style="display: none;">
+            <div class="quiz-wrapper">
+               <div class="quiz-header">
+                  <h1 class="quiz-title">Linux Distribution Finder</h1>
+                  <p class="quiz-subtitle">Finde die beste Linux-Distribution für deine Bedürfnisse</p>
+                  <div class="quiz-progress">
+                     <div class="quiz-progress-bar" id="quiz-progress-bar"></div>
+                  </div>
+               </div>
+
+               <form class="quiz-form" id="quiz-form">
+                  <!-- Frage 1: Erfahrung -->
+                  <div class="quiz-question active" data-question="1">
+                     <h2 class="quiz-question-title">Wie gut kennst du dich mit Linux aus?</h2>
+                     <div class="quiz-options">
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="experience" value="beginner" class="quiz-option-input">
+                           <span class="quiz-option-label">Ich bin neu in Linux</span>
+                        </label>
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="experience" value="intermediate" class="quiz-option-input">
+                           <span class="quiz-option-label">Ich habe Linux zuvor genutzt</span>
+                        </label>
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="experience" value="advanced" class="quiz-option-input">
+                           <span class="quiz-option-label">Ich bin ein erfahrener Nutzer</span>
+                        </label>
+                     </div>
+                  </div>
+
+                  <!-- Frage 2: Verwendungszweck -->
+                  <div class="quiz-question" data-question="2">
+                     <h2 class="quiz-question-title">Für was willst du Linux nutzen?</h2>
+                     <p class="quiz-question-subtitle">(Mehrere Antworten möglich)</p>
+                     <div class="quiz-options">
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="purpose" value="daily" class="quiz-option-input">
+                           <span class="quiz-option-label">Alltäglicher Gebrauch</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="purpose" value="gaming" class="quiz-option-input">
+                           <span class="quiz-option-label">Gaming</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="purpose" value="server" class="quiz-option-input">
+                           <span class="quiz-option-label">Server / Homelab</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="purpose" value="privacy" class="quiz-option-input">
+                           <span class="quiz-option-label">Privatsphäre & Sicherheit</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="purpose" value="education" class="quiz-option-input">
+                           <span class="quiz-option-label">Bildung</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="purpose" value="specialized" class="quiz-option-input">
+                           <span class="quiz-option-label">Spezialisierte Aufgaben</span>
+                        </label>
+                     </div>
+                  </div>
+
+                  <!-- Frage 3: Hardware -->
+                  <div class="quiz-question" data-question="3">
+                     <h2 class="quiz-question-title">Was für eine Hardware wirst du dafür nutzen?</h2>
+                     <div class="quiz-options">
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="hardware" value="old" class="quiz-option-input">
+                           <span class="quiz-option-label">Älteres Gerät</span>
+                        </label>
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="hardware" value="modern" class="quiz-option-input">
+                           <span class="quiz-option-label">Modernes Gerät</span>
+                        </label>
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="hardware" value="sbc" class="quiz-option-input">
+                           <span class="quiz-option-label">Raspberry Pi / SBC</span>
+                        </label>
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="hardware" value="server" class="quiz-option-input">
+                           <span class="quiz-option-label">Server</span>
+                        </label>
+                        <label class="quiz-option quiz-option--radio">
+                           <input type="radio" name="hardware" value="live" class="quiz-option-input">
+                           <span class="quiz-option-label">Liveumgebung</span>
+                        </label>
+                     </div>
+                  </div>
+
+                  <!-- Frage 4: Prioritäten -->
+                  <div class="quiz-question" data-question="4">
+                     <h2 class="quiz-question-title">Was ist für dich am Wichtigsten?</h2>
+                     <p class="quiz-question-subtitle">(Mehrere Antworten möglich)</p>
+                     <div class="quiz-options">
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="priority" value="ease" class="quiz-option-input">
+                           <span class="quiz-option-label">Einfache Bedienung</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="priority" value="privacy" class="quiz-option-input">
+                           <span class="quiz-option-label">Privatsphäre</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="priority" value="stability" class="quiz-option-input">
+                           <span class="quiz-option-label">Stabilität</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="priority" value="performance" class="quiz-option-input">
+                           <span class="quiz-option-label">Performance</span>
+                        </label>
+                        <label class="quiz-option quiz-option--checkbox">
+                           <input type="checkbox" name="priority" value="freedom" class="quiz-option-input">
+                           <span class="quiz-option-label">Nur freie Software</span>
+                        </label>
+                     </div>
+                  </div>
+
+                  <!-- Results View -->
+                  <div class="quiz-question" id="quiz-results" data-question="results" style="display: none;">
+                     <h2 class="quiz-question-title">Deine Empfehlungen</h2>
+                     <p class="quiz-question-subtitle">Basierend auf deine Antworten</p>
+                     <div class="quiz-results" id="quiz-results-list"></div>
+                  </div>
+
+                  <div class="quiz-actions">
+                     <button type="button" class="quiz-button quiz-button--prev" id="quiz-prev-btn" style="display: none;">← Zurück</button>
+                     <button type="button" class="quiz-button quiz-button--next" id="quiz-next-btn">Weiter →</button>
+                     <button type="button" class="quiz-button quiz-button--submit" id="quiz-submit-btn" style="display: none;">Ergebnisse anzeigen</button>
+                     <button type="button" class="quiz-button quiz-button--restart" id="quiz-restart-btn" style="display: none;">Quiz wiederholen</button>
+                  </div>
+               </form>
+            </div>
+         </div>
       </main>
 
       <footer class="footer">

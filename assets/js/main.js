@@ -6216,6 +6216,322 @@ document.getElementById('reset-password-form').addEventListener('submit', async 
    }
 })
 
+/*=============== QUIZ ===============*/
+const QUIZ_RECOMMENDATIONS = {
+   "beginner_daily": ["Ubuntu", "Linux Mint", "Elementary OS"],
+   "beginner_gaming": ["Pop!_OS", "Ubuntu"],
+   "beginner_server": ["Ubuntu Server", "Debian"],
+   "beginner_privacy": ["Linux Mint", "Fedora"],
+   "beginner_education": ["Ubuntu", "Fedora"],
+   "beginner_specialized": ["Linux Mint", "Ubuntu"],
+   
+   "intermediate_daily": ["Fedora", "Arch", "openSUSE"],
+   "intermediate_gaming": ["Pop!_OS", "Fedora", "Arch"],
+   "intermediate_server": ["Rocky Linux", "AlmaLinux", "Debian"],
+   "intermediate_privacy": ["Fedora", "Arch", "Tails"],
+   "intermediate_education": ["Arch", "Fedora", "Manjaro"],
+   "intermediate_specialized": ["Fedora", "Arch", "Gentoo"],
+   
+   "advanced_daily": ["Arch", "NixOS", "Gentoo"],
+   "advanced_gaming": ["Arch", "Gentoo"],
+   "advanced_server": ["NixOS", "Gentoo", "Alpine"],
+   "advanced_privacy": ["Qubes OS", "Alpine", "Tails"],
+   "advanced_education": ["Gentoo", "Arch", "NixOS"],
+   "advanced_specialized": ["NixOS", "Gentoo", "Alpine"],
+   
+   "old_hardware": ["AntiX", "Xubuntu", "Lubuntu"],
+   "modern_hardware": ["Ubuntu", "Fedora", "Arch"],
+   "sbc": ["Raspberry Pi OS", "Ubuntu", "Arch"],
+   "server": ["Debian", "Rocky Linux", "AlmaLinux"],
+   "live": ["Fedora", "Ubuntu", "Tails"],
+   
+   "ease": ["Ubuntu", "Linux Mint", "Elementary OS"],
+   "privacy": ["Fedora", "Privacy-focused Distros", "Tails"],
+   "stability": ["Debian", "Rocky Linux", "CentOS Stream"],
+   "performance": ["Arch", "Alpine", "Gentoo"],
+   "freedom": ["Fedora", "NixOS", "Arch"]
+}
 
+const DISTRO_DATABASE = {
+   "Ubuntu": { description: "Popular, beginner-friendly distribution", tags: ["einsteigerfreundlich", "support"] },
+   "Linux Mint": { description: "Ubuntu-based with a focus on user-friendliness", tags: ["einsteigerfreundlich", "ubuntu"] },
+   "Elementary OS": { description: "Beautiful and simple Linux desktop", tags: ["gutes-design", "einsteigerfreundlich"] },
+   "Pop!_OS": { description: "Ubuntu-based gaming and developer-focused distro", tags: ["gaming", "programmierer"] },
+   "Fedora": { description: "Cutting-edge technology with stability", tags: ["fuer-experten", "ki"] },
+   "Arch": { description: "Lightweight and flexible, for advanced users", tags: ["fuer-experten", "lightweight"] },
+   "openSUSE": { description: "German-origin distro with great tools", tags: ["support", "stabilitaet"] },
+   "Debian": { description: "Stable and reliable, foundation of many distros", tags: ["stabilitaet", "server"] },
+   "Ubuntu Server": { description: "Ubuntu optimized for server environments", tags: ["server", "long-term-support"] },
+   "Rocky Linux": { description: "Enterprise-focused, RHEL-compatible", tags: ["server", "stabilitaet"] },
+   "AlmaLinux": { description: "Community-driven RHEL alternative", tags: ["server", "stabilitaet"] },
+   "Alpine": { description: "Lightweight and security-focused", tags: ["lightweight", "privacy"] },
+   "NixOS": { description: "Declarative and reproducible systems", tags: ["fuer-experten"] },
+   "Gentoo": { description: "Highly customizable, for advanced users", tags: ["fuer-experten", "performance"] },
+   "Tails": { description: "Privacy-focused live system", tags: ["privacy", "security"] },
+   "AntiX": { description: "Lightweight distro for older systems", tags: ["lightweight", "old-systems"] },
+   "Xubuntu": { description: "Ubuntu with lightweight Xfce desktop", tags: ["lightweight", "ubuntu"] },
+   "Lubuntu": { description: "Ubuntu with LXQt for lightweight computing", tags: ["lightweight", "ubuntu"] },
+   "Raspberry Pi OS": { description: "Official OS for Raspberry Pi", tags: ["sbc", "education"] },
+   "Manjaro": { description: "Beginner-friendly Arch-based distro", tags: ["arch", "einsteigerfreundlich"] }
+}
+
+let currentQuizQuestion = 1
+let quizAnswers = {}
+
+function initQuiz() {
+   const quizContainer = document.getElementById('quiz-container')
+   if (quizContainer && !sessionStorage.getItem('quiz_shown')) {
+      quizContainer.style.display = 'flex'
+      sessionStorage.setItem('quiz_shown', 'true')
+   }
+}
+
+function updateQuizProgress() {
+   const progress = (currentQuizQuestion / 4) * 100
+   document.getElementById('quiz-progress-bar').style.width = progress + '%'
+}
+
+function showQuizQuestion(questionNum) {
+   document.querySelectorAll('.quiz-question').forEach(q => q.classList.remove('active'))
+   document.querySelector(`.quiz-question[data-question="${questionNum}"]`).classList.add('active')
+   
+   document.getElementById('quiz-prev-btn').style.display = questionNum === 1 ? 'none' : 'block'
+   document.getElementById('quiz-next-btn').style.display = questionNum === 4 ? 'none' : 'block'
+   document.getElementById('quiz-submit-btn').style.display = questionNum === 4 ? 'block' : 'none'
+   document.getElementById('quiz-results').style.display = 'none'
+   document.getElementById('quiz-restart-btn').style.display = 'none'
+   
+   updateQuizProgress()
+}
+
+function getCheckedValues(name) {
+   const checked = document.querySelectorAll(`input[name="${name}"]:checked`)
+   return Array.from(checked).map(c => c.value)
+}
+
+function calculateResults() {
+   const experience = getCheckedValues('experience')[0]
+   const purposes = getCheckedValues('purpose')
+   const hardware = getCheckedValues('hardware')[0]
+   const priorities = getCheckedValues('priority')
+   
+   let scores = {}
+   
+   // Score by experience
+   if (experience) {
+      const recs = QUIZ_RECOMMENDATIONS[`${experience}_daily`] || []
+      recs.forEach(rec => {
+         scores[rec] = (scores[rec] || 0) + 2
+      })
+   }
+   
+   // Score by purposes
+   purposes.forEach(purpose => {
+      const recs = QUIZ_RECOMMENDATIONS[`${experience}_${purpose}`] || []
+      recs.forEach(rec => {
+         scores[rec] = (scores[rec] || 0) + 3
+      })
+   })
+   
+   // Score by hardware
+   if (hardware) {
+      const recs = QUIZ_RECOMMENDATIONS[hardware] || []
+      recs.forEach(rec => {
+         scores[rec] = (scores[rec] || 0) + 2
+      })
+   }
+   
+   // Score by priorities
+   priorities.forEach(priority => {
+      const recs = QUIZ_RECOMMENDATIONS[priority] || []
+      recs.forEach(rec => {
+         scores[rec] = (scores[rec] || 0) + 2
+      })
+   })
+   
+   // Sort by score and return top 5
+   return Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, score], index) => ({
+         rank: index + 1,
+         name,
+         score,
+         maxScore: 100,
+         ...DISTRO_DATABASE[name]
+      }))
+}
+
+function displayResults(results) {
+   const resultsList = document.getElementById('quiz-results-list')
+   resultsList.innerHTML = results.map(result => `
+      <div class="quiz-result-item" data-distro="${result.name}">
+         <div class="quiz-result-rank">#${result.rank} - ${result.name}</div>
+         <div class="quiz-result-description">${result.description || 'Eine großartige Linux-Distribution'}</div>
+         <div class="quiz-result-score">
+            <span>Kompatibilität</span>
+            <div class="quiz-result-score-bar">
+               <div class="quiz-result-score-fill" style="width: ${(result.score / 15) * 100}%"></div>
+            </div>
+         </div>
+      </div>
+   `).join('')
+   
+   // Add click handler to open distro modal
+   resultsList.querySelectorAll('.quiz-result-item').forEach(item => {
+      item.addEventListener('click', () => {
+         const distroName = item.dataset.distro
+         const distroData = DISTRO_FINDER_DATA.find(d => d.name === distroName)
+         if (distroData) {
+            openDistroFromQuiz(distroData)
+         }
+      })
+   })
+}
+
+function openDistroFromQuiz(distroData) {
+   // Fill distro modal with data
+   currentDistroKey = distroData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+   currentDistroName = distroData.name
+   currentDistroData = distroData
+   
+   // Set basic info
+   if (distroModalName) distroModalName.textContent = distroData.name
+   if (distroModalAvatar) distroModalAvatar.src = distroData.logo || ''
+   if (distroModalAvatar) distroModalAvatar.alt = distroData.name
+   
+   // Set codebase
+   if (distroModalCodebase) {
+      if (distroData.codebase) {
+         distroModalCodebase.textContent = distroData.codebase.charAt(0).toUpperCase() + distroData.codebase.slice(1) + '-basiert'
+         distroModalCodebase.style.display = 'inline'
+      } else {
+         distroModalCodebase.style.display = 'none'
+      }
+   }
+   
+   // Set ISO info
+   if (distroModalIso) {
+      if (distroData.isoSizeMb) {
+         distroModalIso.textContent = `ISO Größe: ${distroData.isoSizeMb} MB`
+      } else {
+         distroModalIso.textContent = ''
+      }
+   }
+   
+   // Set description
+   if (distroModalDescription) {
+      distroModalDescription.textContent = distroData.description || ''
+   }
+   if (distroModalDescriptionBox) {
+      distroModalDescriptionBox.style.display = distroData.description ? 'block' : 'none'
+   }
+   
+   // Set links
+   setDistroLink(distroModalDocs, distroData.docsUrl)
+   setDistroLink(distroModalDownload, distroData.downloadUrl)
+   
+   // Set tags
+   renderDistroTags(distroData.tags)
+   
+   // Set pros/cons
+   const prosConsData = DISTRO_PROS_CONS[distroData.name] || {}
+   renderDistroPointList(
+      distroModalProsList,
+      distroModalProsBox,
+      distroData.pros || prosConsData.pros || [],
+      { symbol: '✓', emptyText: 'Keine Vorteile angegeben' }
+   )
+   renderDistroPointList(
+      distroModalConsList,
+      distroModalConsBox,
+      distroData.cons || prosConsData.cons || [],
+      { symbol: '✗', emptyText: 'Keine Nachteile angegeben' }
+   )
+   
+   // Set video
+   setDistroVideo(distroData)
+   
+   // Clear message
+   if (distroModalMessage) distroModalMessage.textContent = ''
+   
+   // Show modal
+   if (distroModal) {
+      distroModal.style.display = 'flex'
+   }
+   
+   // Hide quiz
+   document.getElementById('quiz-container').style.display = 'none'
+}
+
+document.getElementById('quiz-next-btn')?.addEventListener('click', (e) => {
+   e.preventDefault()
+   
+   const inputs = document.querySelectorAll(`.quiz-question[data-question="${currentQuizQuestion}"] input:checked`)
+   if (inputs.length === 0) {
+      alert('Bitte wähle mindestens eine Antwort')
+      return
+   }
+   
+   const name = document.querySelectorAll(`.quiz-question[data-question="${currentQuizQuestion}"] input:checked`)[0].name
+   quizAnswers[name] = getCheckedValues(name)
+   
+   if (currentQuizQuestion < 4) {
+      currentQuizQuestion++
+      showQuizQuestion(currentQuizQuestion)
+   }
+})
+
+document.getElementById('quiz-prev-btn')?.addEventListener('click', (e) => {
+   e.preventDefault()
+   if (currentQuizQuestion > 1) {
+      currentQuizQuestion--
+      showQuizQuestion(currentQuizQuestion)
+   }
+})
+
+document.getElementById('quiz-submit-btn')?.addEventListener('click', (e) => {
+   e.preventDefault()
+   
+   const inputs = document.querySelectorAll(`.quiz-question[data-question="4"] input:checked`)
+   if (inputs.length === 0) {
+      alert('Bitte wähle mindestens eine Antwort')
+      return
+   }
+   
+   const name = document.querySelectorAll(`.quiz-question[data-question="4"] input:checked`)[0].name
+   quizAnswers[name] = getCheckedValues(name)
+   
+   const results = calculateResults()
+   displayResults(results)
+   
+   document.getElementById('quiz-results').style.display = 'block'
+   document.getElementById('quiz-next-btn').style.display = 'none'
+   document.getElementById('quiz-prev-btn').style.display = 'none'
+   document.getElementById('quiz-submit-btn').style.display = 'none'
+   document.getElementById('quiz-restart-btn').style.display = 'block'
+   
+   // Scroll to results
+   document.getElementById('quiz-results').scrollIntoView({ behavior: 'smooth' })
+})
+
+document.getElementById('quiz-restart-btn')?.addEventListener('click', (e) => {
+   e.preventDefault()
+   currentQuizQuestion = 1
+   quizAnswers = {}
+   document.getElementById('quiz-form').reset()
+   showQuizQuestion(1)
+   document.getElementById('quiz-results').style.display = 'none'
+   document.getElementById('quiz-next-btn').style.display = 'block'
+   document.getElementById('quiz-restart-btn').style.display = 'none'
+   
+   // Scroll to top
+   document.querySelector('.quiz-wrapper').scrollIntoView({ behavior: 'smooth' })
+})
+
+// Initialize quiz on page load
+window.addEventListener('load', () => {
+   setTimeout(initQuiz, 500)
+})
 
 
